@@ -1,6 +1,6 @@
 # KutSocial Docker
 
-Dockerización del proyecto [KutSocial](http://github.com/ernestoacosta/kutsocial).
+Dockerización del proyecto [KutSocial](https://github.com/ernestoacostame/kutsocial).
 
 ## Requisitos
 
@@ -12,14 +12,14 @@ Dockerización del proyecto [KutSocial](http://github.com/ernestoacosta/kutsocia
 1. Clonar este repositorio:
 
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/neoranger/kutsocial-docker.git
 cd kutsocial
 ```
 
 2. Clonar el proyecto KutSocial dentro del directorio actual:
 
 ```bash
-git clone http://github.com/ernestoacosta/kutsocial
+git clone https://github.com/ernestoacostame/kutsocial.git
 ```
 
 3. Levantar los contenedores:
