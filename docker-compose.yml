@@ -1,0 +1,37 @@
+---
+services:
+  # Contenedor principal para la aplicación web KutSocial (PHP-FPM)
+  app:
+    build: .
+    container_name: kutsocial_app
+    restart: unless-stopped
+    volumes:
+      - ./kutsocial:/var/www/html
+      - ./kutsocial/data:/var/www/html/data
+
+  # Contenedor secundario para procesar ActivityPub y tareas en segundo plano
+  worker:
+    build: .
+    container_name: kutsocial_worker
+    restart: unless-stopped
+    command: sh -c "while true; do php /var/www/html/cron.php; sleep 60; done"
+    volumes:
+      - ./kutsocial:/var/www/html
+      - ./kutsocial/data:/var/www/html/data
+    depends_on:
+      - app
+
+  # Servidor web Nginx para servir los archivos estáticos y enviar el resto a la app
+  web:
+#    image: nginx:alpine
+    build: ./nginx
+    container_name: kutsocial_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./kutsocial:/var/www/html:ro
+      - ./nginx/nginx_docker.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./kutsocial/data:/var/www/html/data:ro
+    depends_on:
+      - app
