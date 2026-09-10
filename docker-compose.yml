@@ -1,6 +1,7 @@
 ---
 services:
   # Contenedor principal para la aplicación web KutSocial (PHP-FPM)
+  # Primero debe clonar el repositorio del proyecto http://github.com/ernestoacosta/kutsocial
   app:
     build: .
     container_name: kutsocial_app
