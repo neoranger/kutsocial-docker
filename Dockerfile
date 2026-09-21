@@ -1,31 +1,38 @@
 FROM php:8.3-fpm-alpine
 
-# Instalar dependencias del sistema requeridas
 RUN apk add --no-cache \
     sqlite-dev \
     libzip-dev \
+    curl-dev \
+    openssl \
     zip \
     unzip \
     tzdata \
-    shadow
+    shadow \
+    fcgi
 
-# Ajustar el usuario www-data al UID 1000 para sincronizar los permisos con el host local
 RUN usermod -u 1000 www-data && \
     groupmod -g 1000 www-data
-# Instalar las extensiones de PHP necesarias
-RUN docker-php-ext-install pdo pdo_sqlite zip
 
-# Configurar PHP para permitir subidas de archivos más grandes
+RUN docker-php-ext-install pdo pdo_sqlite zip curl opcache
+
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
     sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 50M/g' "$PHP_INI_DIR/php.ini" && \
     sed -i 's/post_max_size = 8M/post_max_size = 50M/g' "$PHP_INI_DIR/php.ini"
 
-# Configurar el directorio de trabajo
 WORKDIR /var/www/html
 
 COPY ./kutsocial .
-
-# Crear el directorio de datos (si no existe) y asignar permisos
-RUN mkdir -p /var/www/html/data && \
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    mkdir -p /var/www/html/data/uploads /var/www/html/data/backups && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html
+
+USER www-data
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["php-fpm"]
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD SCRIPT_NAME=/ping SCRIPT_FILENAME=/ping REQUEST_METHOD=GET cgi-fcgi -bind -connect 127.0.0.1:9000 || exit 1
